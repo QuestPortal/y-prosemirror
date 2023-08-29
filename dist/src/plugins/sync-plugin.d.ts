@@ -1,5 +1,5 @@
 export function isVisible(item: Y.Item, snapshot?: Y.Snapshot): boolean;
-export function ySyncPlugin(yXmlFragment: Y.XmlFragment, { colors, colorMapping, permanentUserData, onFirstRender, onUnkownNode, }?: YSyncOpts): any;
+export function ySyncPlugin(yXmlFragment: Y.XmlFragment, { colors, colorMapping, permanentUserData, onFirstRender, onUnknownNode, }?: YSyncOpts): any;
 export function getRelativeSelection(pmbinding: any, state: any): {
     anchor: any;
     head: any;
@@ -14,9 +14,10 @@ export class ProsemirrorBinding {
      * @param {Y.XmlFragment} yXmlFragment The bind source
      * @param {any} prosemirrorView The target binding
      */
-    constructor(yXmlFragment: Y.XmlFragment, prosemirrorView: any);
+    constructor(yXmlFragment: Y.XmlFragment, prosemirrorView: any, onUnknownNode: any);
     type: Y.XmlFragment;
     prosemirrorView: any;
+    onUnknownNode: any;
     mux: import("lib0/mutex").mutex;
     isDestroyed: boolean;
     /**
@@ -52,17 +53,13 @@ export class ProsemirrorBinding {
      */
     renderSnapshot(snapshot: Y.Snapshot, prevSnapshot: Y.Snapshot): void;
     unrenderSnapshot(): void;
-    /**
-     * @param {function} [onUnkownNode]
-     */
-    _forceRerender(onUnkownNode?: Function): void;
+    _forceRerender(): void;
     /**
      * @param {Y.Snapshot} snapshot
      * @param {Y.Snapshot} prevSnapshot
      * @param {Object} pluginState
-     * @param {function} [onUnkownNode]
      */
-    _renderSnapshot(snapshot: Y.Snapshot, prevSnapshot: Y.Snapshot, pluginState: any, onUnkownNode?: Function): void;
+    _renderSnapshot(snapshot: Y.Snapshot, prevSnapshot: Y.Snapshot, pluginState: any): void;
     /**
      * @param {Array<Y.YEvent<any>>} events
      * @param {Y.Transaction} transaction
@@ -93,7 +90,7 @@ export type YSyncOpts = {
     /**
      * Fired when the content from Yjs contains a node not recognized by the ProseMirror schema
      */
-    onUnkownNode?: Function;
+    onUnknownNode?: Function;
 };
 export type NormalizedPNodeContent = Array<Array<PModel.Node> | PModel.Node>;
 import * as Y from "yjs";

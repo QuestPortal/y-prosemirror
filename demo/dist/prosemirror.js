@@ -24724,9 +24724,10 @@
   const isVisible = (item, snapshot) =>
     snapshot === undefined
       ? !item.deleted
-      : (snapshot.sv.has(item.id.client) && /** @type {number} */
+      : snapshot.sv.has(item.id.client) &&
+        /** @type {number} */
         (snapshot.sv.get(item.id.client)) > item.id.clock &&
-        !isDeleted(snapshot.ds, item.id));
+        !isDeleted(snapshot.ds, item.id);
 
   /**
    * Either a node if type is YXmlElement or an Array of text nodes if YXmlText
@@ -24745,13 +24746,13 @@
    * @property {Map<string,ColorDef>} [YSyncOpts.colorMapping]
    * @property {Y.PermanentUserData|null} [YSyncOpts.permanentUserData]
    * @property {function} [YSyncOpts.onFirstRender] Fired when the content from Yjs is initially rendered to ProseMirror
-   * @property {function} [YSyncOpts.onUnkownNode] Fired when the content from Yjs contains a node not recognized by the ProseMirror schema
+   * @property {function} [YSyncOpts.onUnknownNode] Fired when the content from Yjs contains a node not recognized by the ProseMirror schema
    */
 
   /**
    * @type {Array<ColorDef>}
    */
-  const defaultColors = [{ light: '#ecd44433', dark: '#ecd444' }];
+  const defaultColors = [{ light: "#ecd44433", dark: "#ecd444" }];
 
   /**
    * @param {Map<string,ColorDef>} colorMapping
@@ -24769,7 +24770,7 @@
       }
       colorMapping.set(user, oneOf(colors));
     }
-    return /** @type {ColorDef} */ (colorMapping.get(user))
+    return /** @type {ColorDef} */ (colorMapping.get(user));
   };
 
   /**
@@ -24780,21 +24781,24 @@
    * @param {YSyncOpts} opts
    * @return {any} Returns a prosemirror plugin that binds to this type
    */
-  const ySyncPlugin = (yXmlFragment, {
-    colors = defaultColors,
-    colorMapping = new Map(),
-    permanentUserData = null,
-    onFirstRender = () => {},
-    onUnkownNode = () => {},
-  } = {}) => {
+  const ySyncPlugin = (
+    yXmlFragment,
+    {
+      colors = defaultColors,
+      colorMapping = new Map(),
+      permanentUserData = null,
+      onFirstRender = () => {},
+      onUnknownNode = () => {},
+    } = {}
+  ) => {
     let changedInitialContent = false;
     let rerenderTimeout;
     const plugin = new Plugin({
       props: {
         editable: (state) => {
           const syncState = ySyncPluginKey.getState(state);
-          return syncState.snapshot == null && syncState.prevSnapshot == null
-        }
+          return syncState.snapshot == null && syncState.prevSnapshot == null;
+        },
       },
       key: ySyncPluginKey,
       state: {
@@ -24814,8 +24818,7 @@
             colors,
             colorMapping,
             permanentUserData,
-            onUnkownNode,
-          }
+          };
         },
         apply: (tr, pluginState) => {
           const change = tr.getMeta(ySyncPluginKey);
@@ -24825,11 +24828,14 @@
               pluginState[key] = change[key];
             }
           }
-          pluginState.addToHistory = tr.getMeta('addToHistory') !== false;
+          pluginState.addToHistory = tr.getMeta("addToHistory") !== false;
           // always set isChangeOrigin. If undefined, this is not change origin.
-          pluginState.isChangeOrigin = change !== undefined &&
-            !!change.isChangeOrigin;
-          pluginState.isUndoRedoOperation = change !== undefined && !!change.isChangeOrigin && !!change.isUndoRedoOperation;
+          pluginState.isChangeOrigin =
+            change !== undefined && !!change.isChangeOrigin;
+          pluginState.isUndoRedoOperation =
+            change !== undefined &&
+            !!change.isChangeOrigin &&
+            !!change.isUndoRedoOperation;
           if (pluginState.binding !== null) {
             if (
               change !== undefined &&
@@ -24838,23 +24844,24 @@
               // snapshot changed, rerender next
               timeout(0, () => {
                 if (
-                  pluginState.binding == null || pluginState.binding.isDestroyed
+                  pluginState.binding == null ||
+                  pluginState.binding.isDestroyed
                 ) {
-                  return
+                  return;
                 }
                 if (change.restore == null) {
                   pluginState.binding._renderSnapshot(
                     change.snapshot,
                     change.prevSnapshot,
                     pluginState,
-                    onUnkownNode
+                    onUnknownNode
                   );
                 } else {
                   pluginState.binding._renderSnapshot(
                     change.snapshot,
                     change.snapshot,
                     pluginState,
-                    onUnkownNode
+                    onUnknownNode
                   );
                   // reset to current prosemirror state
                   delete pluginState.restore;
@@ -24869,11 +24876,11 @@
               });
             }
           }
-          return pluginState
-        }
+          return pluginState;
+        },
       },
       view: (view) => {
-        const binding = new ProsemirrorBinding(yXmlFragment, view);
+        const binding = new ProsemirrorBinding(yXmlFragment, view, onUnknownNode);
         if (rerenderTimeout != null) {
           rerenderTimeout.destroy();
         }
@@ -24887,7 +24894,8 @@
           update: () => {
             const pluginState = plugin.getState(view.state);
             if (
-              pluginState.snapshot == null && pluginState.prevSnapshot == null
+              pluginState.snapshot == null &&
+              pluginState.prevSnapshot == null
             ) {
               if (
                 changedInitialContent ||
@@ -24911,7 +24919,7 @@
                 }
                 binding.mux(() => {
                   /** @type {Y.Doc} */ (pluginState.doc).transact((tr) => {
-                    tr.meta.set('addToHistory', pluginState.addToHistory);
+                    tr.meta.set("addToHistory", pluginState.addToHistory);
                     binding._prosemirrorChanged(view.state.doc);
                   }, ySyncPluginKey);
                 });
@@ -24921,11 +24929,11 @@
           destroy: () => {
             rerenderTimeout.destroy();
             binding.destroy();
-          }
-        }
-      }
+          },
+        };
+      },
     });
-    return plugin
+    return plugin;
   };
 
   /**
@@ -24963,7 +24971,7 @@
       state.selection.head,
       pmbinding.type,
       pmbinding.mapping
-    )
+    ),
   });
 
   /**
@@ -24976,9 +24984,10 @@
      * @param {Y.XmlFragment} yXmlFragment The bind source
      * @param {any} prosemirrorView The target binding
      */
-    constructor (yXmlFragment, prosemirrorView) {
+    constructor(yXmlFragment, prosemirrorView, onUnknownNode) {
       this.type = yXmlFragment;
       this.prosemirrorView = prosemirrorView;
+      this.onUnknownNode = onUnknownNode;
       this.mux = createMutex();
       this.isDestroyed = false;
       /**
@@ -25007,8 +25016,8 @@
         this.beforeTransactionSelection = null;
       };
 
-      this.doc.on('beforeAllTransactions', this.beforeAllTransactions);
-      this.doc.on('afterAllTransactions', this.afterAllTransactions);
+      this.doc.on("beforeAllTransactions", this.beforeAllTransactions);
+      this.doc.on("afterAllTransactions", this.afterAllTransactions);
       yXmlFragment.observeDeep(this._observeFunction);
 
       this._domSelectionInView = null;
@@ -25019,12 +25028,12 @@
      *
      * @returns
      */
-    get _tr () {
-      return this.prosemirrorView.state.tr.setMeta('addToHistory', false)
+    get _tr() {
+      return this.prosemirrorView.state.tr.setMeta("addToHistory", false);
     }
 
-    _isLocalCursorInView () {
-      if (!this.prosemirrorView.hasFocus()) return false
+    _isLocalCursorInView() {
+      if (!this.prosemirrorView.hasFocus()) return false;
       if (isBrowser && this._domSelectionInView === null) {
         // Calculate the domSelectionInView and clear by next tick after all events are finished
         timeout(0, () => {
@@ -25032,10 +25041,10 @@
         });
         this._domSelectionInView = this._isDomSelectionInView();
       }
-      return this._domSelectionInView
+      return this._domSelectionInView;
     }
 
-    _isDomSelectionInView () {
+    _isDomSelectionInView() {
       const selection = this.prosemirrorView._root.getSelection();
 
       const range = this.prosemirrorView._root.createRange();
@@ -25056,17 +25065,20 @@
       const bounding = range.getBoundingClientRect();
       const documentElement = doc$2.documentElement;
 
-      return bounding.bottom >= 0 && bounding.right >= 0 &&
+      return (
+        bounding.bottom >= 0 &&
+        bounding.right >= 0 &&
         bounding.left <=
           (window.innerWidth || documentElement.clientWidth || 0) &&
         bounding.top <= (window.innerHeight || documentElement.clientHeight || 0)
+      );
     }
 
     /**
      * @param {Y.Snapshot} snapshot
      * @param {Y.Snapshot} prevSnapshot
      */
-    renderSnapshot (snapshot, prevSnapshot) {
+    renderSnapshot(snapshot, prevSnapshot) {
       if (!prevSnapshot) {
         prevSnapshot = createSnapshot(createDeleteSet(), new Map());
       }
@@ -25075,16 +25087,20 @@
       );
     }
 
-    unrenderSnapshot () {
+    unrenderSnapshot() {
       this.mapping = new Map();
       this.mux(() => {
-        const fragmentContent = this.type.toArray().map((t) =>
-          createNodeFromYElement(
-            /** @type {Y.XmlElement} */ (t),
-            this.prosemirrorView.state.schema,
-            this.mapping
+        const fragmentContent = this.type
+          .toArray()
+          .map((t) =>
+            createNodeFromYElement(
+              /** @type {Y.XmlElement} */ (t),
+              this.prosemirrorView.state.schema,
+              this.mapping,
+              this.onUnknownNode
+            )
           )
-        ).filter((n) => n !== null);
+          .filter((n) => n !== null);
         // @ts-ignore
         const tr = this._tr.replace(
           0,
@@ -25096,20 +25112,20 @@
       });
     }
 
-    /**
-     * @param {function} [onUnkownNode]
-     */
-    _forceRerender (onUnkownNode) {
+    _forceRerender() {
       this.mapping = new Map();
       this.mux(() => {
-        const fragmentContent = this.type.toArray().map((t) =>
-          createNodeFromYElement(
-            /** @type {Y.XmlElement} */ (t),
-            this.prosemirrorView.state.schema,
-            this.mapping,
-            onUnkownNode,
+        const fragmentContent = this.type
+          .toArray()
+          .map((t) =>
+            createNodeFromYElement(
+              /** @type {Y.XmlElement} */ (t),
+              this.prosemirrorView.state.schema,
+              this.mapping,
+              this.onUnknownNode
+            )
           )
-        ).filter((n) => n !== null);
+          .filter((n) => n !== null);
         // @ts-ignore
         const tr = this._tr.replace(
           0,
@@ -25126,9 +25142,8 @@
      * @param {Y.Snapshot} snapshot
      * @param {Y.Snapshot} prevSnapshot
      * @param {Object} pluginState
-     * @param {function} [onUnkownNode]
      */
-    _renderSnapshot (snapshot$1, prevSnapshot, pluginState, onUnkownNode) {
+    _renderSnapshot(snapshot$1, prevSnapshot, pluginState) {
       if (!snapshot$1) {
         snapshot$1 = snapshot(this.doc);
       }
@@ -25149,9 +25164,10 @@
            * @param {Y.ID} id
            */
           const computeYChange = (type, id) => {
-            const user = type === 'added'
-              ? pud.getUserByClientId(id.client)
-              : pud.getUserByDeletedId(id);
+            const user =
+              type === "added"
+                ? pud.getUserByClientId(id.client)
+                : pud.getUserByDeletedId(id);
             return {
               user,
               type,
@@ -25159,33 +25175,36 @@
                 pluginState.colorMapping,
                 pluginState.colors,
                 user
-              )
-            }
+              ),
+            };
           };
           // Create document fragment and render
           const fragmentContent = typeListToArraySnapshot(
             this.type,
             new Snapshot(prevSnapshot.ds, snapshot$1.sv)
-          ).map((t) => {
-            if (
-              !t._item.deleted || isVisible(t._item, snapshot$1) ||
-              isVisible(t._item, prevSnapshot)
-            ) {
-              return createNodeFromYElement(
-                t,
-                this.prosemirrorView.state.schema,
-                new Map(),
-                onUnkownNode,
-                snapshot$1,
-                prevSnapshot,
-                computeYChange
-              )
-            } else {
-              // No need to render elements that are not visible by either snapshot.
-              // If a client adds and deletes content in the same snapshot the element is not visible by either snapshot.
-              return null
-            }
-          }).filter((n) => n !== null);
+          )
+            .map((t) => {
+              if (
+                !t._item.deleted ||
+                isVisible(t._item, snapshot$1) ||
+                isVisible(t._item, prevSnapshot)
+              ) {
+                return createNodeFromYElement(
+                  t,
+                  this.prosemirrorView.state.schema,
+                  new Map(),
+                  this.onUnknownNode,
+                  snapshot$1,
+                  prevSnapshot,
+                  computeYChange
+                );
+              } else {
+                // No need to render elements that are not visible by either snapshot.
+                // If a client adds and deletes content in the same snapshot the element is not visible by either snapshot.
+                return null;
+              }
+            })
+            .filter((n) => n !== null);
           // @ts-ignore
           const tr = this._tr.replace(
             0,
@@ -25203,15 +25222,16 @@
      * @param {Array<Y.YEvent<any>>} events
      * @param {Y.Transaction} transaction
      */
-    _typeChanged (events, transaction) {
+    _typeChanged(events, transaction) {
       const syncState = ySyncPluginKey.getState(this.prosemirrorView.state);
       if (
-        events.length === 0 || syncState.snapshot != null ||
+        events.length === 0 ||
+        syncState.snapshot != null ||
         syncState.prevSnapshot != null
       ) {
         // drop out if snapshot is active
         this.renderSnapshot(syncState.snapshot, syncState.prevSnapshot);
-        return
+        return;
       }
       this.mux(() => {
         /**
@@ -25219,25 +25239,26 @@
          * @param {Y.AbstractType<any>} type
          */
         const delType = (_, type) => this.mapping.delete(type);
-        iterateDeletedStructs(
-          transaction,
-          transaction.deleteSet,
-          (struct) => {
-            if (struct.constructor === Item$1) {
-              const type = /** @type {Y.ContentType} */ (/** @type {Y.Item} */ (struct).content).type;
-              type && this.mapping.delete(type);
-            }
+        iterateDeletedStructs(transaction, transaction.deleteSet, (struct) => {
+          if (struct.constructor === Item$1) {
+            const type = /** @type {Y.ContentType} */ (
+              /** @type {Y.Item} */ (struct).content
+            ).type;
+            type && this.mapping.delete(type);
           }
-        );
+        });
         transaction.changed.forEach(delType);
         transaction.changedParentTypes.forEach(delType);
-        const fragmentContent = this.type.toArray().map((t) =>
-          createNodeIfNotExists(
-            /** @type {Y.XmlElement | Y.XmlHook} */ (t),
-            this.prosemirrorView.state.schema,
-            this.mapping
+        const fragmentContent = this.type
+          .toArray()
+          .map((t) =>
+            createNodeIfNotExists(
+              /** @type {Y.XmlElement | Y.XmlHook} */ (t),
+              this.prosemirrorView.state.schema,
+              this.mapping
+            )
           )
-        ).filter((n) => n !== null);
+          .filter((n) => n !== null);
         // @ts-ignore
         let tr = this._tr.replace(
           0,
@@ -25245,9 +25266,13 @@
           new Slice(Fragment.from(fragmentContent), 0, 0)
         );
         restoreRelativeSelection(tr, this.beforeTransactionSelection, this);
-        tr = tr.setMeta(ySyncPluginKey, { isChangeOrigin: true, isUndoRedoOperation: transaction.origin instanceof UndoManager });
+        tr = tr.setMeta(ySyncPluginKey, {
+          isChangeOrigin: true,
+          isUndoRedoOperation: transaction.origin instanceof UndoManager,
+        });
         if (
-          this.beforeTransactionSelection !== null && this._isLocalCursorInView()
+          this.beforeTransactionSelection !== null &&
+          this._isLocalCursorInView()
         ) {
           tr.scrollIntoView();
         }
@@ -25255,7 +25280,7 @@
       });
     }
 
-    _prosemirrorChanged (doc) {
+    _prosemirrorChanged(doc) {
       this.doc.transact(() => {
         updateYFragment(this.doc, this.type, doc, this.mapping);
         this.beforeTransactionSelection = getRelativeSelection(
@@ -25265,11 +25290,11 @@
       }, ySyncPluginKey);
     }
 
-    destroy () {
+    destroy() {
       this.isDestroyed = true;
       this.type.unobserveDeep(this._observeFunction);
-      this.doc.off('beforeAllTransactions', this.beforeAllTransactions);
-      this.doc.off('afterAllTransactions', this.afterAllTransactions);
+      this.doc.off("beforeAllTransactions", this.beforeAllTransactions);
+      this.doc.off("afterAllTransactions", this.afterAllTransactions);
     }
   }
 
@@ -25278,7 +25303,7 @@
    * @param {Y.XmlElement | Y.XmlHook} el
    * @param {PModel.Schema} schema
    * @param {ProsemirrorMapping} mapping
-   * @param {function} [onUnkownNode]
+   * @param {function} [onUnknownNode]
    * @param {Y.Snapshot} [snapshot]
    * @param {Y.Snapshot} [prevSnapshot]
    * @param {function('removed' | 'added', Y.ID):any} [computeYChange]
@@ -25288,7 +25313,7 @@
     el,
     schema,
     mapping,
-    onUnkownNode,
+    onUnknownNode,
     snapshot,
     prevSnapshot,
     computeYChange
@@ -25300,16 +25325,16 @@
           el,
           schema,
           mapping,
-          onUnkownNode,
+          onUnknownNode,
           snapshot,
           prevSnapshot,
           computeYChange
-        )
+        );
       } else {
-        throw methodUnimplemented() // we are currently not handling hooks
+        throw methodUnimplemented(); // we are currently not handling hooks
       }
     }
-    return node
+    return node;
   };
 
   /**
@@ -25317,7 +25342,7 @@
    * @param {Y.XmlElement} el
    * @param {any} schema
    * @param {ProsemirrorMapping} mapping
-   * @param {function} [onUnkownNode]
+   * @param {function} [onUnknownNode]
    * @param {Y.Snapshot} [snapshot]
    * @param {Y.Snapshot} [prevSnapshot]
    * @param {function('removed' | 'added', Y.ID):any} [computeYChange]
@@ -25327,10 +25352,10 @@
     el,
     schema,
     mapping,
-    onUnkownNode,
+    onUnknownNode,
     snapshot,
     prevSnapshot,
-    computeYChange,
+    computeYChange
   ) => {
     const children = [];
     const createChildren = (type) => {
@@ -25339,10 +25364,10 @@
           type,
           schema,
           mapping,
-          onUnkownNode,
+          onUnknownNode,
           snapshot,
           prevSnapshot,
-          computeYChange,
+          computeYChange
         );
         if (n !== null) {
           children.push(n);
@@ -25352,7 +25377,6 @@
           type,
           schema,
           mapping,
-          onUnkownNode,
           snapshot,
           prevSnapshot,
           computeYChange
@@ -25369,40 +25393,38 @@
     if (snapshot === undefined || prevSnapshot === undefined) {
       el.toArray().forEach(createChildren);
     } else {
-      typeListToArraySnapshot(el, new Snapshot(prevSnapshot.ds, snapshot.sv))
-        .forEach(createChildren);
+      typeListToArraySnapshot(
+        el,
+        new Snapshot(prevSnapshot.ds, snapshot.sv)
+      ).forEach(createChildren);
     }
     try {
       const attrs = el.getAttributes(snapshot);
       if (snapshot !== undefined) {
         if (!isVisible(/** @type {Y.Item} */ (el._item), snapshot)) {
           attrs.ychange = computeYChange
-            ? computeYChange('removed', /** @type {Y.Item} */ (el._item).id)
-            : { type: 'removed' };
+            ? computeYChange("removed", /** @type {Y.Item} */ (el._item).id)
+            : { type: "removed" };
         } else if (!isVisible(/** @type {Y.Item} */ (el._item), prevSnapshot)) {
           attrs.ychange = computeYChange
-            ? computeYChange('added', /** @type {Y.Item} */ (el._item).id)
-            : { type: 'added' };
+            ? computeYChange("added", /** @type {Y.Item} */ (el._item).id)
+            : { type: "added" };
         }
       }
       const node = schema.node(el.nodeName, attrs, children);
       mapping.set(el, node);
-      return node
+      return node;
     } catch (e) {
-      // TODO: handle
-      if (e instanceof RangeError) {
-        console.error(e);
-        if (onUnkownNode !== undefined) {
-          onUnkownNode();
-        }
-        throw e;
-       }
+      if (onUnknownNode !== undefined) {
+        onUnknownNode();
+      }
+
       // an error occured while creating the node. This is probably a result of a concurrent action.
       /** @type {Y.Doc} */ (el.doc).transact((transaction) => {
         /** @type {Y.Item} */ (el._item).delete(transaction);
       }, ySyncPluginKey);
       mapping.delete(el);
-      return null
+      return null;
     }
   };
 
@@ -25411,7 +25433,6 @@
    * @param {Y.XmlText} text
    * @param {any} schema
    * @param {ProsemirrorMapping} _mapping
-   * @param {function} [onUnkownNode]
    * @param {Y.Snapshot} [snapshot]
    * @param {Y.Snapshot} [prevSnapshot]
    * @param {function('removed' | 'added', Y.ID):any} [computeYChange]
@@ -25421,7 +25442,6 @@
     text,
     schema,
     _mapping,
-    onUnkownNode,
     snapshot,
     prevSnapshot,
     computeYChange
@@ -25438,23 +25458,14 @@
         nodes.push(schema.text(delta.insert, marks));
       }
     } catch (e) {
-      // TODO: handle
-      if (e instanceof RangeError) {
-        console.error(e);
-        if (onUnkownNode !== undefined) {
-          onUnkownNode();
-        }
-        throw e;
-       }
-      
       // an error occured while creating the node. This is probably a result of a concurrent action.
       /** @type {Y.Doc} */ (text.doc).transact((transaction) => {
         /** @type {Y.Item} */ (text._item).delete(transaction);
       }, ySyncPluginKey);
-      return null
+      return null;
     }
     // @ts-ignore
-    return nodes
+    return nodes;
   };
 
   /**
@@ -25468,11 +25479,11 @@
     const delta = nodes.map((node) => ({
       // @ts-ignore
       insert: node.text,
-      attributes: marksToAttributes(node.marks)
+      attributes: marksToAttributes(node.marks),
     }));
     type.applyDelta(delta);
     mapping.set(type, nodes);
-    return type
+    return type;
   };
 
   /**
@@ -25485,7 +25496,7 @@
     const type = new YXmlElement(node.type.name);
     for (const key in node.attrs) {
       const val = node.attrs[key];
-      if (val !== null && key !== 'ychange') {
+      if (val !== null && key !== "ychange") {
         type.setAttribute(key, val);
       }
     }
@@ -25496,7 +25507,7 @@
       )
     );
     mapping.set(type, node);
-    return type
+    return type;
   };
 
   /**
@@ -25510,21 +25521,23 @@
       ? createTypeFromTextNodes(node, mapping)
       : createTypeFromElementNode(node, mapping);
 
-  const isObject = (val) => typeof val === 'object' && val !== null;
+  const isObject = (val) => typeof val === "object" && val !== null;
 
   const equalAttrs = (pattrs, yattrs) => {
     const keys = Object.keys(pattrs).filter((key) => pattrs[key] !== null);
     let eq =
       keys.length ===
-        Object.keys(yattrs).filter((key) => yattrs[key] !== null).length;
+      Object.keys(yattrs).filter((key) => yattrs[key] !== null).length;
     for (let i = 0; i < keys.length && eq; i++) {
       const key = keys[i];
       const l = pattrs[key];
       const r = yattrs[key];
-      eq = key === 'ychange' || l === r ||
+      eq =
+        key === "ychange" ||
+        l === r ||
         (isObject(l) && isObject(r) && equalAttrs(l, r));
     }
-    return eq
+    return eq;
   };
 
   /**
@@ -25551,7 +25564,7 @@
         res.push(n);
       }
     }
-    return res
+    return res;
   };
 
   /**
@@ -25560,14 +25573,17 @@
    */
   const equalYTextPText = (ytext, ptexts) => {
     const delta = ytext.toDelta();
-    return delta.length === ptexts.length &&
-      delta.every((d, i) =>
-        d.insert === /** @type {any} */ (ptexts[i]).text &&
-        keys$1(d.attributes || {}).length === ptexts[i].marks.length &&
-        ptexts[i].marks.every((mark) =>
-          equalAttrs(d.attributes[mark.type.name] || {}, mark.attrs)
-        )
+    return (
+      delta.length === ptexts.length &&
+      delta.every(
+        (d, i) =>
+          d.insert === /** @type {any} */ (ptexts[i]).text &&
+          keys$1(d.attributes || {}).length === ptexts[i].marks.length &&
+          ptexts[i].marks.every((mark) =>
+            equalAttrs(d.attributes[mark.type.name] || {}, mark.attrs)
+          )
       )
+    );
   };
 
   /**
@@ -25576,18 +25592,24 @@
    */
   const equalYTypePNode = (ytype, pnode) => {
     if (
-      ytype instanceof YXmlElement && !(pnode instanceof Array) &&
+      ytype instanceof YXmlElement &&
+      !(pnode instanceof Array) &&
       matchNodeName(ytype, pnode)
     ) {
       const normalizedContent = normalizePNodeContent(pnode);
-      return ytype._length === normalizedContent.length &&
+      return (
+        ytype._length === normalizedContent.length &&
         equalAttrs(ytype.getAttributes(), pnode.attrs) &&
-        ytype.toArray().every((ychild, i) =>
-          equalYTypePNode(ychild, normalizedContent[i])
-        )
+        ytype
+          .toArray()
+          .every((ychild, i) => equalYTypePNode(ychild, normalizedContent[i]))
+      );
     }
-    return ytype instanceof YXmlText && pnode instanceof Array &&
+    return (
+      ytype instanceof YXmlText &&
+      pnode instanceof Array &&
       equalYTextPText(ytype, pnode)
+    );
   };
 
   /**
@@ -25596,10 +25618,10 @@
    */
   const mappedIdentity = (mapped, pcontent) =>
     mapped === pcontent ||
-    (mapped instanceof Array && pcontent instanceof Array &&
-      mapped.length === pcontent.length && mapped.every((a, i) =>
-      pcontent[i] === a
-    ));
+    (mapped instanceof Array &&
+      pcontent instanceof Array &&
+      mapped.length === pcontent.length &&
+      mapped.every((a, i) => pcontent[i] === a));
 
   /**
    * @param {Y.XmlElement} ytype
@@ -25622,7 +25644,7 @@
       if (mappedIdentity(mapping.get(leftY), leftP)) {
         foundMappedChild = true; // definite (good) match!
       } else if (!equalYTypePNode(leftY, leftP)) {
-        break
+        break;
       }
     }
     for (; left + right < minCnt; right++) {
@@ -25631,17 +25653,17 @@
       if (mappedIdentity(mapping.get(rightY), rightP)) {
         foundMappedChild = true;
       } else if (!equalYTypePNode(rightY, rightP)) {
-        break
+        break;
       }
     }
     return {
       equalityFactor: left + right,
-      foundMappedChild
-    }
+      foundMappedChild,
+    };
   };
 
   const ytextTrans = (ytext) => {
-    let str = '';
+    let str = "";
     /**
      * @type {Y.Item|null}
      */
@@ -25659,8 +25681,8 @@
     }
     return {
       str,
-      nAttrs
-    }
+      nAttrs,
+    };
   };
 
   /**
@@ -25675,11 +25697,11 @@
     const { nAttrs, str } = ytextTrans(ytext);
     const content = ptexts.map((p) => ({
       insert: /** @type {any} */ (p).text,
-      attributes: Object.assign({}, nAttrs, marksToAttributes(p.marks))
+      attributes: Object.assign({}, nAttrs, marksToAttributes(p.marks)),
     }));
     const { insert, remove, index } = simpleDiff(
       str,
-      content.map((c) => c.insert).join('')
+      content.map((c) => c.insert).join("")
     );
     ytext.delete(index, remove);
     ytext.insert(index, insert);
@@ -25691,11 +25713,11 @@
   const marksToAttributes = (marks) => {
     const pattrs = {};
     marks.forEach((mark) => {
-      if (mark.type.name !== 'ychange') {
+      if (mark.type.name !== "ychange") {
         pattrs[mark.type.name] = mark.attrs;
       }
     });
-    return pattrs
+    return pattrs;
   };
 
   /**
@@ -25710,7 +25732,7 @@
       yDomFragment instanceof YXmlElement &&
       yDomFragment.nodeName !== pNode.type.name
     ) {
-      throw new Error('node name mismatch!')
+      throw new Error("node name mismatch!");
     }
     mapping.set(yDomFragment, pNode);
     // update attributes
@@ -25719,7 +25741,7 @@
       const pAttrs = pNode.attrs;
       for (const key in pAttrs) {
         if (pAttrs[key] !== null) {
-          if (yDomAttrs[key] !== pAttrs[key] && key !== 'ychange') {
+          if (yDomAttrs[key] !== pAttrs[key] && key !== "ychange") {
             yDomFragment.setAttribute(key, pAttrs[key]);
           }
         } else {
@@ -25750,7 +25772,7 @@
           // update mapping
           mapping.set(leftY, leftP);
         } else {
-          break
+          break;
         }
       }
     }
@@ -25763,7 +25785,7 @@
           // update mapping
           mapping.set(rightY, rightP);
         } else {
-          break
+          break;
         }
       }
     }
@@ -25780,10 +25802,10 @@
           }
           left += 1;
         } else {
-          let updateLeft = leftY instanceof YXmlElement &&
-            matchNodeName(leftY, leftP);
-          let updateRight = rightY instanceof YXmlElement &&
-            matchNodeName(rightY, rightP);
+          let updateLeft =
+            leftY instanceof YXmlElement && matchNodeName(leftY, leftP);
+          let updateRight =
+            rightY instanceof YXmlElement && matchNodeName(rightY, rightP);
           if (updateLeft && updateRight) {
             // decide which which element to update
             const equalityLeft = computeChildEqualityFactor(
@@ -25797,11 +25819,13 @@
               mapping
             );
             if (
-              equalityLeft.foundMappedChild && !equalityRight.foundMappedChild
+              equalityLeft.foundMappedChild &&
+              !equalityRight.foundMappedChild
             ) {
               updateRight = false;
             } else if (
-              !equalityLeft.foundMappedChild && equalityRight.foundMappedChild
+              !equalityLeft.foundMappedChild &&
+              equalityRight.foundMappedChild
             ) {
               updateLeft = false;
             } else if (
@@ -25832,7 +25856,7 @@
             mapping.delete(yDomFragment.get(left));
             yDomFragment.delete(left, 1);
             yDomFragment.insert(left, [
-              createTypeFromTextOrElementNode(leftP, mapping)
+              createTypeFromTextOrElementNode(leftP, mapping),
             ]);
             left += 1;
           }
@@ -25840,14 +25864,18 @@
       }
       const yDelLen = yChildCnt - left - right;
       if (
-        yChildCnt === 1 && pChildCnt === 0 && yChildren[0] instanceof YXmlText
+        yChildCnt === 1 &&
+        pChildCnt === 0 &&
+        yChildren[0] instanceof YXmlText
       ) {
         mapping.delete(yChildren[0]);
         // Edge case handling https://github.com/yjs/y-prosemirror/issues/108
         // Only delete the content of the Y.Text to retain remote changes on the same Y.Text object
         yChildren[0].delete(0, yChildren[0].length);
       } else if (yDelLen > 0) {
-        yDomFragment.slice(left, left + yDelLen).forEach(type => mapping.delete(type));
+        yDomFragment
+          .slice(left, left + yDelLen)
+          .forEach((type) => mapping.delete(type));
         yDomFragment.delete(left, yDelLen);
       }
       if (left + right < pChildCnt) {
