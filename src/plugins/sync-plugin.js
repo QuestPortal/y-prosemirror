@@ -191,7 +191,7 @@ export const ySyncPlugin = (
       }
       // Make sure this is called in a separate context
       rerenderTimeout = eventloop.timeout(0, () => {
-        binding._forceRerender();
+        binding._forceRerender(onUnkownNode);
         view.dispatch(view.state.tr.setMeta(ySyncPluginKey, { binding }));
         onFirstRender();
       });
