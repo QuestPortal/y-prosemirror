@@ -684,7 +684,6 @@ const createNodeFromYElement = (
         type,
         schema,
         mapping,
-        onUnkownNode,
         snapshot,
         prevSnapshot,
         computeYChange
@@ -726,6 +725,7 @@ const createNodeFromYElement = (
     // TODO: handle
     if (e instanceof RangeError) {
       console.error(e);
+      console.log("onunkownnode: ", onUnkownNode);
       if (onUnkownNode !== undefined) {
         onUnkownNode();
       }
@@ -744,7 +744,6 @@ const createNodeFromYElement = (
  * @param {Y.XmlText} text
  * @param {any} schema
  * @param {ProsemirrorMapping} _mapping
- * @param {function} [onUnkownNode]
  * @param {Y.Snapshot} [snapshot]
  * @param {Y.Snapshot} [prevSnapshot]
  * @param {function('removed' | 'added', Y.ID):any} [computeYChange]
@@ -754,7 +753,6 @@ const createTextNodesFromYText = (
   text,
   schema,
   _mapping,
-  onUnkownNode,
   snapshot,
   prevSnapshot,
   computeYChange
@@ -771,14 +769,6 @@ const createTextNodesFromYText = (
       nodes.push(schema.text(delta.insert, marks));
     }
   } catch (e) {
-    // TODO: handle
-    if (e instanceof RangeError) {
-      console.error(e);
-      if (onUnkownNode !== undefined) {
-        onUnkownNode();
-      }
-    }
-
     // an error occured while creating the node. This is probably a result of a concurrent action.
     /** @type {Y.Doc} */ (text.doc).transact((transaction) => {
       /** @type {Y.Item} */ (text._item).delete(transaction);
