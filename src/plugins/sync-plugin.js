@@ -49,6 +49,7 @@ export const isVisible = (item, snapshot) =>
  * @property {Map<string,ColorDef>} [YSyncOpts.colorMapping]
  * @property {Y.PermanentUserData|null} [YSyncOpts.permanentUserData]
  * @property {function} [YSyncOpts.onFirstRender] Fired when the content from Yjs is initially rendered to ProseMirror
+ * @property {function} [YSyncOpts.onUnkownNode] Fired when the content from Yjs contains a node not recognized by the ProseMirror schema
  */
 
 /**
@@ -87,7 +88,8 @@ export const ySyncPlugin = (yXmlFragment, {
   colors = defaultColors,
   colorMapping = new Map(),
   permanentUserData = null,
-  onFirstRender = () => {}
+  onFirstRender = () => {},
+  onUnkownNode = () => {},
 } = {}) => {
   let changedInitialContent = false
   let rerenderTimeout
@@ -115,7 +117,8 @@ export const ySyncPlugin = (yXmlFragment, {
           addToHistory: true,
           colors,
           colorMapping,
-          permanentUserData
+          permanentUserData,
+          onUnkownNode,
         }
       },
       apply: (tr, pluginState) => {
@@ -147,13 +150,15 @@ export const ySyncPlugin = (yXmlFragment, {
                 pluginState.binding._renderSnapshot(
                   change.snapshot,
                   change.prevSnapshot,
-                  pluginState
+                  pluginState,
+                  onUnkownNode
                 )
               } else {
                 pluginState.binding._renderSnapshot(
                   change.snapshot,
                   change.snapshot,
-                  pluginState
+                  pluginState,
+                  onUnkownNode
                 )
                 // reset to current prosemirror state
                 delete pluginState.restore
@@ -395,14 +400,18 @@ export class ProsemirrorBinding {
     })
   }
 
-  _forceRerender () {
+  /**
+   * @param {function} [onUnkownNode]
+   */
+  _forceRerender (onUnkownNode) {
     this.mapping = new Map()
     this.mux(() => {
       const fragmentContent = this.type.toArray().map((t) =>
         createNodeFromYElement(
           /** @type {Y.XmlElement} */ (t),
           this.prosemirrorView.state.schema,
-          this.mapping
+          this.mapping,
+          onUnkownNode,
         )
       ).filter((n) => n !== null)
       // @ts-ignore
@@ -421,8 +430,9 @@ export class ProsemirrorBinding {
    * @param {Y.Snapshot} snapshot
    * @param {Y.Snapshot} prevSnapshot
    * @param {Object} pluginState
+   * @param {function} [onUnkownNode]
    */
-  _renderSnapshot (snapshot, prevSnapshot, pluginState) {
+  _renderSnapshot (snapshot, prevSnapshot, pluginState, onUnkownNode) {
     if (!snapshot) {
       snapshot = Y.snapshot(this.doc)
     }
@@ -469,6 +479,7 @@ export class ProsemirrorBinding {
               t,
               this.prosemirrorView.state.schema,
               new Map(),
+              onUnkownNode,
               snapshot,
               prevSnapshot,
               computeYChange
@@ -571,6 +582,7 @@ export class ProsemirrorBinding {
  * @param {Y.XmlElement | Y.XmlHook} el
  * @param {PModel.Schema} schema
  * @param {ProsemirrorMapping} mapping
+ * @param {function} [onUnkownNode]
  * @param {Y.Snapshot} [snapshot]
  * @param {Y.Snapshot} [prevSnapshot]
  * @param {function('removed' | 'added', Y.ID):any} [computeYChange]
@@ -580,6 +592,7 @@ const createNodeIfNotExists = (
   el,
   schema,
   mapping,
+  onUnkownNode,
   snapshot,
   prevSnapshot,
   computeYChange
@@ -591,6 +604,7 @@ const createNodeIfNotExists = (
         el,
         schema,
         mapping,
+        onUnkownNode,
         snapshot,
         prevSnapshot,
         computeYChange
@@ -607,6 +621,7 @@ const createNodeIfNotExists = (
  * @param {Y.XmlElement} el
  * @param {any} schema
  * @param {ProsemirrorMapping} mapping
+ * @param {function} [onUnkownNode]
  * @param {Y.Snapshot} [snapshot]
  * @param {Y.Snapshot} [prevSnapshot]
  * @param {function('removed' | 'added', Y.ID):any} [computeYChange]
@@ -616,9 +631,10 @@ const createNodeFromYElement = (
   el,
   schema,
   mapping,
+  onUnkownNode,
   snapshot,
   prevSnapshot,
-  computeYChange
+  computeYChange,
 ) => {
   const children = []
   const createChildren = (type) => {
@@ -627,9 +643,10 @@ const createNodeFromYElement = (
         type,
         schema,
         mapping,
+        onUnkownNode,
         snapshot,
         prevSnapshot,
-        computeYChange
+        computeYChange,
       )
       if (n !== null) {
         children.push(n)
@@ -639,6 +656,7 @@ const createNodeFromYElement = (
         type,
         schema,
         mapping,
+        onUnkownNode,
         snapshot,
         prevSnapshot,
         computeYChange
@@ -675,6 +693,14 @@ const createNodeFromYElement = (
     mapping.set(el, node)
     return node
   } catch (e) {
+    // TODO: handle
+    if (e instanceof RangeError) {
+      console.error(e);
+      if (onUnkownNode !== undefined) {
+        onUnkownNode();
+      }
+      throw e;
+     }
     // an error occured while creating the node. This is probably a result of a concurrent action.
     /** @type {Y.Doc} */ (el.doc).transact((transaction) => {
       /** @type {Y.Item} */ (el._item).delete(transaction)
@@ -689,6 +715,7 @@ const createNodeFromYElement = (
  * @param {Y.XmlText} text
  * @param {any} schema
  * @param {ProsemirrorMapping} _mapping
+ * @param {function} [onUnkownNode]
  * @param {Y.Snapshot} [snapshot]
  * @param {Y.Snapshot} [prevSnapshot]
  * @param {function('removed' | 'added', Y.ID):any} [computeYChange]
@@ -698,6 +725,7 @@ const createTextNodesFromYText = (
   text,
   schema,
   _mapping,
+  onUnkownNode,
   snapshot,
   prevSnapshot,
   computeYChange
@@ -714,6 +742,15 @@ const createTextNodesFromYText = (
       nodes.push(schema.text(delta.insert, marks))
     }
   } catch (e) {
+    // TODO: handle
+    if (e instanceof RangeError) {
+      console.error(e)
+      if (onUnkownNode !== undefined) {
+        onUnkownNode();
+      }
+      throw e;
+     }
+    
     // an error occured while creating the node. This is probably a result of a concurrent action.
     /** @type {Y.Doc} */ (text.doc).transact((transaction) => {
       /** @type {Y.Item} */ (text._item).delete(transaction)
