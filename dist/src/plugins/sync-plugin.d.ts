@@ -1,5 +1,5 @@
 export function isVisible(item: Y.Item, snapshot?: Y.Snapshot): boolean;
-export function ySyncPlugin(yXmlFragment: Y.XmlFragment, { colors, colorMapping, permanentUserData, onFirstRender, onUnknownNode, }?: YSyncOpts): any;
+export function ySyncPlugin(yXmlFragment: Y.XmlFragment, { colors, colorMapping, permanentUserData, onFirstRender, onCreateNodeError, }?: YSyncOpts): any;
 export function getRelativeSelection(pmbinding: any, state: any): {
     anchor: any;
     head: any;
@@ -13,11 +13,12 @@ export class ProsemirrorBinding {
     /**
      * @param {Y.XmlFragment} yXmlFragment The bind source
      * @param {any} prosemirrorView The target binding
+     * @param {function("error"): any} onCreateNodeError
      */
-    constructor(yXmlFragment: Y.XmlFragment, prosemirrorView: any, onUnknownNode: any);
+    constructor(yXmlFragment: Y.XmlFragment, prosemirrorView: any, onCreateNodeError: (arg0: "error") => any);
     type: Y.XmlFragment;
     prosemirrorView: any;
-    onUnknownNode: any;
+    onCreateNodeError: (arg0: "error") => any;
     mux: import("lib0/mutex").mutex;
     isDestroyed: boolean;
     /**
@@ -90,7 +91,7 @@ export type YSyncOpts = {
     /**
      * Fired when the content from Yjs contains a node not recognized by the ProseMirror schema
      */
-    onUnknownNode?: Function;
+    onCreateNodeError?: (arg0: "error") => any;
 };
 export type NormalizedPNodeContent = Array<Array<PModel.Node> | PModel.Node>;
 import * as Y from "yjs";
