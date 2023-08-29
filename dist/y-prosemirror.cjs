@@ -103,7 +103,7 @@ const isVisible = (item, snapshot) =>
  * @property {Map<string,ColorDef>} [YSyncOpts.colorMapping]
  * @property {Y.PermanentUserData|null} [YSyncOpts.permanentUserData]
  * @property {function} [YSyncOpts.onFirstRender] Fired when the content from Yjs is initially rendered to ProseMirror
- * @property {function("error"): any} [YSyncOpts.onCreateNodeError] Fired when the content from Yjs contains a node not recognized by the ProseMirror schema
+ * @property {function} [YSyncOpts.onCreateNodeError] Fired when the content from Yjs contains a node not recognized by the ProseMirror schema
  */
 
 /**
@@ -344,7 +344,7 @@ class ProsemirrorBinding {
   /**
    * @param {Y.XmlFragment} yXmlFragment The bind source
    * @param {any} prosemirrorView The target binding
-   * @param {function("error"): any} onCreateNodeError
+   * @param {function} onCreateNodeError
    */
   constructor(yXmlFragment, prosemirrorView, onCreateNodeError) {
     this.type = yXmlFragment;
@@ -665,7 +665,7 @@ class ProsemirrorBinding {
  * @param {Y.XmlElement | Y.XmlHook} el
  * @param {PModel.Schema} schema
  * @param {ProsemirrorMapping} mapping
- * @param {function("error"): any} [onCreateNodeError]
+ * @param {function} [onCreateNodeError]
  * @param {Y.Snapshot} [snapshot]
  * @param {Y.Snapshot} [prevSnapshot]
  * @param {function('removed' | 'added', Y.ID):any} [computeYChange]
@@ -704,7 +704,7 @@ const createNodeIfNotExists = (
  * @param {Y.XmlElement} el
  * @param {any} schema
  * @param {ProsemirrorMapping} mapping
- * @param {function("error"): any} [onCreateNodeError]
+ * @param {function} [onCreateNodeError]
  * @param {Y.Snapshot} [snapshot]
  * @param {Y.Snapshot} [prevSnapshot]
  * @param {function('removed' | 'added', Y.ID):any} [computeYChange]

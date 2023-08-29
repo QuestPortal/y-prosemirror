@@ -13,12 +13,12 @@ export class ProsemirrorBinding {
     /**
      * @param {Y.XmlFragment} yXmlFragment The bind source
      * @param {any} prosemirrorView The target binding
-     * @param {function("error"): any} onCreateNodeError
+     * @param {function} onCreateNodeError
      */
-    constructor(yXmlFragment: Y.XmlFragment, prosemirrorView: any, onCreateNodeError: (arg0: "error") => any);
+    constructor(yXmlFragment: Y.XmlFragment, prosemirrorView: any, onCreateNodeError: Function);
     type: Y.XmlFragment;
     prosemirrorView: any;
-    onCreateNodeError: (arg0: "error") => any;
+    onCreateNodeError: Function;
     mux: import("lib0/mutex").mutex;
     isDestroyed: boolean;
     /**
@@ -91,7 +91,7 @@ export type YSyncOpts = {
     /**
      * Fired when the content from Yjs contains a node not recognized by the ProseMirror schema
      */
-    onCreateNodeError?: (arg0: "error") => any;
+    onCreateNodeError?: Function;
 };
 export type NormalizedPNodeContent = Array<Array<PModel.Node> | PModel.Node>;
 import * as Y from "yjs";
