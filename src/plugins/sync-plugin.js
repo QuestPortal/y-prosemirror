@@ -89,7 +89,7 @@ export const ySyncPlugin = (yXmlFragment, {
   colorMapping = new Map(),
   permanentUserData = null,
   onFirstRender = () => {},
-  onCreateNodeError = () => {},
+  onCreateNodeError = () => {}
 } = {}) => {
   let changedInitialContent = false
   let rerenderTimeout
@@ -689,7 +689,7 @@ const createNodeFromYElement = (
     return node
   } catch (e) {
     if (onCreateNodeError !== undefined) {
-      onCreateNodeError(e);
+      onCreateNodeError(e)
     }
     // an error occured while creating the node. This is probably a result of a concurrent action.
     /** @type {Y.Doc} */ (el.doc).transact((transaction) => {
