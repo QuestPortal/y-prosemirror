@@ -535,7 +535,8 @@ export class ProsemirrorBinding {
         createNodeIfNotExists(
           /** @type {Y.XmlElement | Y.XmlHook} */ (t),
           this.prosemirrorView.state.schema,
-          this.mapping
+          this.mapping,
+          this.onCreateNodeError
         )
       ).filter((n) => n !== null)
       // @ts-ignore

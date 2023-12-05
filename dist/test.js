@@ -25541,7 +25541,7 @@
     colorMapping = new Map(),
     permanentUserData = null,
     onFirstRender = () => {},
-    onCreateNodeError = () => {},
+    onCreateNodeError = () => {}
   } = {}) => {
     let changedInitialContent = false;
     let rerenderTimeout;
@@ -25987,7 +25987,8 @@
           createNodeIfNotExists(
             /** @type {Y.XmlElement | Y.XmlHook} */ (t),
             this.prosemirrorView.state.schema,
-            this.mapping
+            this.mapping,
+            this.onCreateNodeError
           )
         ).filter((n) => n !== null);
         // @ts-ignore
