@@ -49,6 +49,7 @@ export const isVisible = (item, snapshot) =>
  * @property {Map<string,ColorDef>} [YSyncOpts.colorMapping]
  * @property {Y.PermanentUserData|null} [YSyncOpts.permanentUserData]
  * @property {function} [YSyncOpts.onFirstRender] Fired when the content from Yjs is initially rendered to ProseMirror
+ * @property {function} [YSyncOpts.onCreateNodeError] Fired when the content from Yjs contains a node not recognized by the ProseMirror schema
  */
 
 /**
@@ -87,7 +88,8 @@ export const ySyncPlugin = (yXmlFragment, {
   colors = defaultColors,
   colorMapping = new Map(),
   permanentUserData = null,
-  onFirstRender = () => {}
+  onFirstRender = () => {},
+  onCreateNodeError = () => {}
 } = {}) => {
   let changedInitialContent = false
   let rerenderTimeout
@@ -172,7 +174,7 @@ export const ySyncPlugin = (yXmlFragment, {
       }
     },
     view: (view) => {
-      const binding = new ProsemirrorBinding(yXmlFragment, view)
+      const binding = new ProsemirrorBinding(yXmlFragment, view, onCreateNodeError)
       if (rerenderTimeout != null) {
         rerenderTimeout.destroy()
       }
@@ -274,10 +276,12 @@ export class ProsemirrorBinding {
   /**
    * @param {Y.XmlFragment} yXmlFragment The bind source
    * @param {any} prosemirrorView The target binding
+   * @param {function} onCreateNodeError
    */
-  constructor (yXmlFragment, prosemirrorView) {
+  constructor (yXmlFragment, prosemirrorView, onCreateNodeError) {
     this.type = yXmlFragment
     this.prosemirrorView = prosemirrorView
+    this.onCreateNodeError = onCreateNodeError
     this.mux = createMutex()
     this.isDestroyed = false
     /**
@@ -381,7 +385,8 @@ export class ProsemirrorBinding {
         createNodeFromYElement(
           /** @type {Y.XmlElement} */ (t),
           this.prosemirrorView.state.schema,
-          this.mapping
+          this.mapping,
+          this.onCreateNodeError
         )
       ).filter((n) => n !== null)
       // @ts-ignore
@@ -402,7 +407,8 @@ export class ProsemirrorBinding {
         createNodeFromYElement(
           /** @type {Y.XmlElement} */ (t),
           this.prosemirrorView.state.schema,
-          this.mapping
+          this.mapping,
+          this.onCreateNodeError
         )
       ).filter((n) => n !== null)
       // @ts-ignore
@@ -469,6 +475,7 @@ export class ProsemirrorBinding {
               t,
               this.prosemirrorView.state.schema,
               new Map(),
+              this.onCreateNodeError,
               snapshot,
               prevSnapshot,
               computeYChange
@@ -528,7 +535,8 @@ export class ProsemirrorBinding {
         createNodeIfNotExists(
           /** @type {Y.XmlElement | Y.XmlHook} */ (t),
           this.prosemirrorView.state.schema,
-          this.mapping
+          this.mapping,
+          this.onCreateNodeError
         )
       ).filter((n) => n !== null)
       // @ts-ignore
@@ -571,6 +579,7 @@ export class ProsemirrorBinding {
  * @param {Y.XmlElement | Y.XmlHook} el
  * @param {PModel.Schema} schema
  * @param {ProsemirrorMapping} mapping
+ * @param {function} [onCreateNodeError]
  * @param {Y.Snapshot} [snapshot]
  * @param {Y.Snapshot} [prevSnapshot]
  * @param {function('removed' | 'added', Y.ID):any} [computeYChange]
@@ -580,6 +589,7 @@ const createNodeIfNotExists = (
   el,
   schema,
   mapping,
+  onCreateNodeError,
   snapshot,
   prevSnapshot,
   computeYChange
@@ -591,6 +601,7 @@ const createNodeIfNotExists = (
         el,
         schema,
         mapping,
+        onCreateNodeError,
         snapshot,
         prevSnapshot,
         computeYChange
@@ -607,6 +618,7 @@ const createNodeIfNotExists = (
  * @param {Y.XmlElement} el
  * @param {any} schema
  * @param {ProsemirrorMapping} mapping
+ * @param {function} [onCreateNodeError]
  * @param {Y.Snapshot} [snapshot]
  * @param {Y.Snapshot} [prevSnapshot]
  * @param {function('removed' | 'added', Y.ID):any} [computeYChange]
@@ -616,6 +628,7 @@ const createNodeFromYElement = (
   el,
   schema,
   mapping,
+  onCreateNodeError,
   snapshot,
   prevSnapshot,
   computeYChange
@@ -627,6 +640,7 @@ const createNodeFromYElement = (
         type,
         schema,
         mapping,
+        onCreateNodeError,
         snapshot,
         prevSnapshot,
         computeYChange
@@ -675,6 +689,9 @@ const createNodeFromYElement = (
     mapping.set(el, node)
     return node
   } catch (e) {
+    if (onCreateNodeError !== undefined) {
+      onCreateNodeError(e)
+    }
     // an error occured while creating the node. This is probably a result of a concurrent action.
     /** @type {Y.Doc} */ (el.doc).transact((transaction) => {
       /** @type {Y.Item} */ (el._item).delete(transaction)
