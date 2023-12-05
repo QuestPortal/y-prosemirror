@@ -1354,7 +1354,7 @@ const relativePositionToAbsolutePosition = (y, documentType, relPos, mapping) =>
         if (t instanceof Y__namespace.XmlText) {
           pos += t._length;
         } else {
-          pos += /** @type {any} */ (mapping.get(t)).nodeSize;
+          pos += /** @type {any} */ (mapping.get(t))?.nodeSize ?? 0;
         }
       }
       n = /** @type {Y.Item} */ (n.right);
