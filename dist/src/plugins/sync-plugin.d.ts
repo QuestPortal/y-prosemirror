@@ -1,5 +1,5 @@
 export function isVisible(item: Y.Item, snapshot?: Y.Snapshot): boolean;
-export function ySyncPlugin(yXmlFragment: Y.XmlFragment, { colors, colorMapping, permanentUserData, onFirstRender, onCreateNodeError, }?: YSyncOpts): any;
+export function ySyncPlugin(yXmlFragment: Y.XmlFragment, { colors, colorMapping, permanentUserData, onFirstRender, onCreateNodeError }?: YSyncOpts): any;
 export function getRelativeSelection(pmbinding: any, state: any): {
     anchor: any;
     head: any;
