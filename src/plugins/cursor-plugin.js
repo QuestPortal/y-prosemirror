@@ -224,22 +224,20 @@ export const yCursorPlugin = (
               head
             })
           }
-        } else if (
-          current.cursor != null &&
-          relativePositionToAbsolutePosition(
-            ystate.doc,
-            ystate.type,
-            Y.createRelativePositionFromJSON(current.cursor.anchor),
-            ystate.binding.mapping
-          ) !== null
-        ) {
-          // delete cursor information if current cursor information is owned by this editor binding
+        } 
+      }
+      
+      const unsetCursorInfo = () => {
+        const current = awareness.getLocalState() || {}
+
+        if (current[cursorStateField]) {
           awareness.setLocalStateField(cursorStateField, null)
         }
       }
+  
       awareness.on('change', awarenessListener)
       view.dom.addEventListener('focusin', updateCursorInfo)
-      view.dom.addEventListener('focusout', updateCursorInfo)
+      view.dom.addEventListener('focusout', unsetCursorInfo)
       return {
         update: updateCursorInfo,
         destroy: () => {
