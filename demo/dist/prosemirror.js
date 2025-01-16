@@ -25385,7 +25385,9 @@
       mapping.set(el, node);
       return node
     } catch (e) {
+      console.log('createNodeFromYElement', e);
       if (onCreateNodeError !== undefined) {
+        console.log('onCreateNodeError', e);
         onCreateNodeError(e);
       }
       // an error occured while creating the node. This is probably a result of a concurrent action.
