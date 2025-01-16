@@ -26139,6 +26139,8 @@
       }
       const node = schema.node(el.nodeName, attrs, children);
       mapping.set(el, node);
+      console.log('createNodeFromYElement ----');
+      console.log('createNodeFromYElement', node);
       return node
     } catch (e) {
       console.log('createNodeFromYElement', e);
